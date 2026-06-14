@@ -6,6 +6,7 @@ dependencies = [
     "attrs>=26.1.0",
     "msgspec>=0.21.1",
     "mypy>=2.1.0",
+    "record-type>=2023.1.post1",
 ]
 
 [dependency-groups]

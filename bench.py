@@ -21,7 +21,9 @@ attrs/msgspec stay interpreted here; to put them on the compiled axis, move
 their defs into a module you also pass to mypyc (mind attrs' mypyc notes).
 """
 
-from __future__ import annotations
+# NB: no `from __future__ import annotations` — record-type's @record inspects
+# the real return annotation and rejects the *string* "None" that PEP 563 would
+# produce; Python 3.14 defers annotations natively (PEP 649) so it isn't needed.
 
 import dis
 import gc
@@ -55,6 +57,7 @@ def _reg() -> list[tuple[str, Callable[..., Any], tuple[Any, ...], Callable[[Any
         ("PlainNoSlots",    C.PlainNoSlots,   ARGS, lambda o: o.a),
         ("PlainSlots",      C.PlainSlots,     ARGS, lambda o: o.a),
         ("NativeFinal",     C.NativeFinal,    ARGS, lambda o: o.a),
+        ("ManualRecord",    C.ManualRecord,   ARGS, lambda o: o.a),
         ("collections.NT",  C.CNamedTuple,    ARGS, lambda o: o.a),
         ("typing.NT",       C.TNamedTuple,    ARGS, lambda o: o.a),
         ("dataclass",       C.DCPlain,        ARGS, lambda o: o.a),
@@ -110,6 +113,18 @@ def _reg() -> list[tuple[str, Callable[..., Any], tuple[Any, ...], Callable[[Any
             ("msgspec.Struct",  MsgspecStruct,  ARGS, lambda o: o.a),
             ("msgspec frozen",  MsgspecFrozen,  ARGS, lambda o: o.a),
         ]
+    except ImportError:
+        pass
+
+    # record-type (PyPI): @record decorates a function whose signature defines
+    # the fields; the decorator exec's a genuinely-immutable Record subclass.
+    try:
+        from records import record  # type: ignore[import-untyped]  # no stubs
+
+        @record  # type: ignore[untyped-decorator]  # records ships no types
+        def RecordType(a: int, b: int, c: int) -> None: ...
+
+        reg += [("record-type", RecordType, ARGS, lambda o: o.a)]
     except ImportError:
         pass
 

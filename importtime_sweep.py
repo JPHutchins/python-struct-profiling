@@ -88,6 +88,36 @@ def _attrs(decorator: str) -> Callable[[int], str]:
     return lambda i: f"@{decorator}\nclass C{i}:\n    a: int\n    b: int\n    c: int\n"
 
 
+def _manual_record(i: int) -> str:
+    # Brett Cannon's complete immutable record, hand-written: slots,
+    # __match_args__, object.__setattr__ init, a raising __setattr__, plus
+    # __eq__/__hash__/__repr__. No runtime dependency (annotations are builtin).
+    return (
+        f"class C{i}:\n"
+        f'    __slots__ = ("a", "b", "c")\n'
+        f'    __match_args__ = ("a", "b", "c")\n'
+        f"    def __init__(self, a: int, b: int, c: int) -> None:\n"
+        f'        object.__setattr__(self, "a", a)\n'
+        f'        object.__setattr__(self, "b", b)\n'
+        f'        object.__setattr__(self, "c", c)\n'
+        f"    def __setattr__(self, _attr, _val):\n"
+        f'        raise TypeError("immutable")\n'
+        f"    def __repr__(self):\n"
+        f'        return f"{{type(self).__name__}}({{self.a!r}}, {{self.b!r}}, {{self.c!r}})"\n'
+        f"    def __eq__(self, other):\n"
+        f"        if not isinstance(other, type(self)):\n"
+        f"            return NotImplemented\n"
+        f"        return self.a == other.a and self.b == other.b and self.c == other.c\n"
+        f"    def __hash__(self):\n"
+        f"        return hash((self.a, self.b, self.c))\n"
+    )
+
+
+def _record_type(i: int) -> str:
+    # record-type (PyPI): decorate a function whose signature defines the fields.
+    return f"@record\ndef C{i}(a: int, b: int, c: int) -> None: ...\n"
+
+
 CONSTRUCTS: list[Construct] = [
     Construct("native_mut", "native mutable (slots)", "from typing import Final",
               _native_mutable, True),
@@ -103,10 +133,12 @@ CONSTRUCTS: list[Construct] = [
     Construct("attrs_frz", "attrs (frozen + slots)", "import attrs", _attrs("attrs.frozen"), False),
     Construct("msgspec_mut", "msgspec", "import msgspec", _msgspec(False), False),
     Construct("msgspec_frz", "msgspec (frozen)", "import msgspec", _msgspec(True), False),
+    Construct("manual_record", "manual record-type", "", _manual_record, True),
+    Construct("record_type", "record-type", "from records import record", _record_type, True),
 ]
 
 DEPS = [("typing", "typing"), ("dataclasses", "dataclasses"),
-        ("attrs", "attrs"), ("msgspec", "msgspec")]
+        ("attrs", "attrs"), ("msgspec", "msgspec"), ("records", "records")]
 
 
 # ---------------------------------------------------------------------------

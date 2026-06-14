@@ -399,6 +399,7 @@ dependencies = [
     { name = "attrs" },
     { name = "msgspec" },
     { name = "mypy" },
+    { name = "record-type" },
 ]
 
 [package.dev-dependencies]
@@ -412,12 +413,22 @@ requires-dist = [
     { name = "attrs", specifier = ">=26.1.0" },
     { name = "msgspec", specifier = ">=0.21.1" },
     { name = "mypy", specifier = ">=2.1.0" },
+    { name = "record-type", specifier = ">=2023.1.post1" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "matplotlib", specifier = ">=3.11.0" },
     { name = "setuptools", specifier = ">=82.0.1" },
+]
+
+[[package]]
+name = "record-type"
+version = "2023.1.post1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f4/dc/d0eb2136b8172f282b0e63e9797e38321f07864bcc1decd6bdc3c24e9ab3/record_type-2023.1.post1.tar.gz", hash = "sha256:aa80ab1fe772b7ca14e3b91852fd6f243b4106b62c84c09534d79d02488cddae", size = 6675, upload-time = "2024-01-03T04:17:27.651Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3c/c4/00760645165b996356b2963110359afbdad828e004da66ca82c0a837530c/record_type-2023.1.post1-py3-none-any.whl", hash = "sha256:96747aa77a2417e9e16084255f168998ad3ca397ea41af3aa90ee617ec49887e", size = 6505, upload-time = "2024-01-03T04:17:25.558Z" },
 ]
 
 [[package]]
