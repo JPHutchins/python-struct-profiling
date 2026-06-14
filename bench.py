@@ -149,8 +149,13 @@ def mem_per_instance(ctor: Callable[..., Any], args: tuple[Any, ...], n: int = N
 
 def _py_func(cls: type, name: str) -> FunctionType | None:
     """Return the attribute if it is a real Python function (has bytecode),
-    else None (C slot wrapper, builtin, or compiled native method)."""
+    else None (C slot wrapper, builtin, or compiled native method).
+
+    NamedTuple wraps its generated `__new__` in a staticmethod, so unwrap that
+    first — otherwise the 7-bytecode tuple constructor reads as 'C/none'."""
     fn = cls.__dict__.get(name)
+    if isinstance(fn, staticmethod):
+        fn = fn.__func__
     return fn if isinstance(fn, FunctionType) else None
 
 
