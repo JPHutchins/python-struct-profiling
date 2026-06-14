@@ -33,9 +33,10 @@ import containers as C
 COMPILED = getattr(C, "__file__", "").endswith((".so", ".pyd"))
 
 N_MEM = 200_000      # instances allocated for the tracemalloc measurement
-N_TIME = 1_000_000   # iterations for instantiation timing
-N_ACCESS = 5_000_000 # iterations for attribute-access timing
+N_TIME = 1_000_000   # iterations per repeat for instantiation timing
+N_ACCESS = 5_000_000 # iterations per repeat for attribute-access timing
 N_DEF = 50_000       # iterations for type-creation timing
+N_REPEAT = 7         # timeit repeats; report the min (low-noise estimator)
 
 
 # ---------------------------------------------------------------------------
@@ -213,13 +214,15 @@ def definition_time_factories() -> list[tuple[str, Callable[[], type]]]:
 # ---------------------------------------------------------------------------
 
 def time_construct(ctor: Callable[..., Any], args: tuple, n: int = N_TIME) -> float:
-    return timeit.timeit(lambda: ctor(*args), number=n) / n * 1e9  # ns/op
+    best = min(timeit.repeat(lambda: ctor(*args), repeat=N_REPEAT, number=n))
+    return best / n * 1e9  # ns/op, min of N_REPEAT
 
 
 def time_access(ctor: Callable[..., Any], args: tuple,
                 accessor: Callable[[Any], Any], n: int = N_ACCESS) -> float:
     obj = ctor(*args)
-    return timeit.timeit(lambda: accessor(obj), number=n) / n * 1e9  # ns/op
+    best = min(timeit.repeat(lambda: accessor(obj), repeat=N_REPEAT, number=n))
+    return best / n * 1e9  # ns/op, min of N_REPEAT
 
 
 # ---------------------------------------------------------------------------
