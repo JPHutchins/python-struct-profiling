@@ -6,11 +6,14 @@
   4. instantiation & access   (the 'already known' timing baselines)
 
 Run interpreted:
+    rm -f containers*.so       # a stale .so shadows the .py, so remove it first
     python bench.py
 
 Run with containers.py compiled (the mypyc axis):
     mypyc containers.py        # produces containers.*.so
     python bench.py            # now imports the compiled module
+    # NOTE: the .so wins over the .py on every later run until you delete it,
+    # so re-`rm containers*.so` before measuring the interpreted axis again.
 
 When containers is compiled, the dis column for the stdlib constructs flips to
 "C" (no interpreted bytecode left) — that flip is itself the headline result.
@@ -46,8 +49,8 @@ N_REPEAT = 7         # timeit repeats; report the min (low-noise estimator)
 ARGS = (1, 2, 3)
 
 
-def _reg() -> list[tuple[str, Callable[..., Any], tuple, Callable[[Any], Any]]]:
-    reg: list[tuple[str, Callable[..., Any], tuple, Callable[[Any], Any]]] = [
+def _reg() -> list[tuple[str, Callable[..., Any], tuple[Any, ...], Callable[[Any], Any]]]:
+    reg: list[tuple[str, Callable[..., Any], tuple[Any, ...], Callable[[Any], Any]]] = [
         ("dict",            lambda a, b, c: {"a": a, "b": b, "c": c}, ARGS, lambda o: o["a"]),
         ("PlainNoSlots",    C.PlainNoSlots,   ARGS, lambda o: o.a),
         ("PlainSlots",      C.PlainSlots,     ARGS, lambda o: o.a),
@@ -117,11 +120,11 @@ def _reg() -> list[tuple[str, Callable[..., Any], tuple, Callable[[Any], Any]]]:
 # 1. memory footprint
 # ---------------------------------------------------------------------------
 
-def getsize_one(ctor: Callable[..., Any], args: tuple) -> int:
+def getsize_one(ctor: Callable[..., Any], args: tuple[Any, ...]) -> int:
     return sys.getsizeof(ctor(*args))
 
 
-def mem_per_instance(ctor: Callable[..., Any], args: tuple, n: int = N_MEM) -> float:
+def mem_per_instance(ctor: Callable[..., Any], args: tuple[Any, ...], n: int = N_MEM) -> float:
     """Real allocator cost per instance, GC header included.
 
     Subtracts a same-length [None]*n list so the list's own storage cancels
@@ -181,12 +184,12 @@ def dump_init_disassembly(name: str, cls: type) -> None:
 # 3. definition-time (type creation) cost
 # ---------------------------------------------------------------------------
 
-def definition_time_factories() -> list[tuple[str, Callable[[], type]]]:
+def definition_time_factories() -> list[tuple[str, Callable[[], Any]]]:
     from collections import namedtuple
     from dataclasses import make_dataclass
     from typing import NamedTuple
 
-    facs: list[tuple[str, Callable[[], type]]] = [
+    facs: list[tuple[str, Callable[[], Any]]] = [
         ("collections.NT", lambda: namedtuple("X", ["a", "b", "c"])),
         ("typing.NT",      lambda: NamedTuple("X", [("a", int), ("b", int), ("c", int)])),
         ("dataclass",      lambda: make_dataclass("X", [("a", int), ("b", int), ("c", int)])),
@@ -213,12 +216,12 @@ def definition_time_factories() -> list[tuple[str, Callable[[], type]]]:
 # timing helpers
 # ---------------------------------------------------------------------------
 
-def time_construct(ctor: Callable[..., Any], args: tuple, n: int = N_TIME) -> float:
+def time_construct(ctor: Callable[..., Any], args: tuple[Any, ...], n: int = N_TIME) -> float:
     best = min(timeit.repeat(lambda: ctor(*args), repeat=N_REPEAT, number=n))
     return best / n * 1e9  # ns/op, min of N_REPEAT
 
 
-def time_access(ctor: Callable[..., Any], args: tuple,
+def time_access(ctor: Callable[..., Any], args: tuple[Any, ...],
                 accessor: Callable[[Any], Any], n: int = N_ACCESS) -> float:
     obj = ctor(*args)
     best = min(timeit.repeat(lambda: accessor(obj), repeat=N_REPEAT, number=n))

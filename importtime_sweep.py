@@ -187,8 +187,14 @@ def _mypyc_per_type(c: Construct, k: int, runs: int, work: Path) -> float | None
     cdir.mkdir(exist_ok=True)
     (cdir / f"{c.key}.py").write_text(
         c.header + "\n\n\n" + "\n\n".join(c.body(i) for i in range(k)) + "\n")
-    proc = subprocess.run(["mypyc", f"{c.key}.py"], cwd=cdir,
-                          capture_output=True, text=True)
+    try:
+        proc = subprocess.run(["mypyc", f"{c.key}.py"], cwd=cdir,
+                              capture_output=True, text=True)
+    except FileNotFoundError:
+        # mypyc lives in the venv, not on the system PATH; degrade to "n/a"
+        # instead of crashing the whole sweep (run via `uv run` to enable it).
+        print(f"  [mypyc skip {c.key}] mypyc not on PATH (use `uv run`)", file=sys.stderr)
+        return None
     so = list(cdir.glob(f"{c.key}.*.so"))
     if proc.returncode != 0 or not so:
         print(f"  [mypyc skip {c.key}] {proc.stderr.strip()[-200:]}", file=sys.stderr)
