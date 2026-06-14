@@ -1,0 +1,14 @@
+# Python bytecode / caches
+__pycache__/
+*.py[cod]
+.mypy_cache/
+
+# Virtual environment (managed by uv)
+.venv/
+
+# mypyc build artifacts
+/build/
+*.so
+
+# Generated reference figures (regenerate with `uv run python plot_results.py`)
+fig_*.png

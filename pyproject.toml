@@ -1,0 +1,15 @@
+[project]
+name = "python-struct-profiling"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = [
+    "attrs>=26.1.0",
+    "msgspec>=0.21.1",
+    "mypy>=2.1.0",
+]
+
+[dependency-groups]
+dev = [
+    "matplotlib>=3.11.0",
+    "setuptools>=82.0.1",
+]
