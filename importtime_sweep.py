@@ -118,6 +118,13 @@ def _record_type(i: int) -> str:
     return f"@record\ndef C{i}(a: int, b: int, c: int) -> None: ...\n"
 
 
+def _record_c(i: int) -> str:
+    # record-type (C): inherit a C-backed `Record` base, NamedTuple-style. The
+    # metaclass reads the body annotations in C (no inspect, no exec), so this
+    # is the inheritance form the @record decorator can't be.
+    return f"class C{i}(Record):\n    a: int\n    b: int\n    c: int\n"
+
+
 CONSTRUCTS: list[Construct] = [
     Construct("native_mut", "native mutable (slots)", "from typing import Final",
               _native_mutable, True),
@@ -135,10 +142,13 @@ CONSTRUCTS: list[Construct] = [
     Construct("msgspec_frz", "msgspec (frozen)", "import msgspec", _msgspec(True), False),
     Construct("manual_record", "manual record-type", "", _manual_record, True),
     Construct("record_type", "record-type", "from records import record", _record_type, True),
+    Construct("record_c", "record-type (C)", "from native_record import Record",
+              _record_c, False),
 ]
 
 DEPS = [("typing", "typing"), ("dataclasses", "dataclasses"),
-        ("attrs", "attrs"), ("msgspec", "msgspec"), ("records", "records")]
+        ("attrs", "attrs"), ("msgspec", "msgspec"), ("records", "records"),
+        ("native_record", "native_record")]
 
 
 # ---------------------------------------------------------------------------

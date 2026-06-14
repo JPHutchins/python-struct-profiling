@@ -291,6 +291,11 @@ wheels = [
 ]
 
 [[package]]
+name = "native-record"
+version = "0.0.1"
+source = { git = "https://github.com/JPHutchins/record-type?subdirectory=experiments%2Fnative-record&branch=research%2Fnative-record-c-feasibility#c11fbcbb5643395879cf9f334cbe3373d75f49c7" }
+
+[[package]]
 name = "numpy"
 version = "2.4.6"
 source = { registry = "https://pypi.org/simple" }
@@ -399,6 +404,7 @@ dependencies = [
     { name = "attrs" },
     { name = "msgspec" },
     { name = "mypy" },
+    { name = "native-record" },
     { name = "record-type" },
 ]
 
@@ -413,6 +419,7 @@ requires-dist = [
     { name = "attrs", specifier = ">=26.1.0" },
     { name = "msgspec", specifier = ">=0.21.1" },
     { name = "mypy", specifier = ">=2.1.0" },
+    { name = "native-record", git = "https://github.com/JPHutchins/record-type?subdirectory=experiments%2Fnative-record&branch=research%2Fnative-record-c-feasibility" },
     { name = "record-type", specifier = ">=2023.1.post1" },
 ]
 

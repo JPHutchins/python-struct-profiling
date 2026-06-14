@@ -128,6 +128,21 @@ def _reg() -> list[tuple[str, Callable[..., Any], tuple[Any, ...], Callable[[Any
     except ImportError:
         pass
 
+    # record-type (C): a C-backed, inheritable `Record` base (metaclass reads
+    # the body annotations in C). Native, so it never goes through containers.py
+    # / mypyc — it is already a compiled extension type.
+    try:
+        from native_record import Record  # type: ignore[import-not-found]  # C ext, no stubs
+
+        class RecordC(Record):  # type: ignore[misc]  # Record is a C ext type (Any to mypy)
+            a: int
+            b: int
+            c: int
+
+        reg += [("record-type (C)", RecordC, ARGS, lambda o: o.a)]
+    except ImportError:
+        pass
+
     return reg
 
 

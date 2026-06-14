@@ -7,6 +7,7 @@ dependencies = [
     "msgspec>=0.21.1",
     "mypy>=2.1.0",
     "record-type>=2023.1.post1",
+    "native-record",
 ]
 
 [dependency-groups]
@@ -14,3 +15,9 @@ dev = [
     "matplotlib>=3.11.0",
     "setuptools>=82.0.1",
 ]
+
+# record-type (C): the inheritable C-backed `Record` base prototype, built from
+# JPHutchins' research branch (a C extension, not on PyPI). Pinned here so the
+# import / instantiation numbers for "record-type (C)" are reproducible.
+[tool.uv.sources]
+native-record = { git = "https://github.com/JPHutchins/record-type", branch = "research/native-record-c-feasibility", subdirectory = "experiments/native-record" }
